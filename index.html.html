@@ -1,0 +1,601 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:transparent;color:var(--color-text-primary)}
+.app{max-width:680px;margin:0 auto;padding:0}
+.home{padding:1.5rem 0}
+.home-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.home-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.stat-card{background:var(--color-background-secondary);border-radius:10px;padding:12px;text-align:center}
+.stat-num{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.mode-btn{background:var(--color-background-primary);border:1.5px solid var(--color-border-secondary);border-radius:12px;padding:14px;cursor:pointer;text-align:left;transition:all .15s}
+.mode-btn:hover,.mode-btn.active{border-color:#185FA5;background:#E6F1FB}
+.mode-icon{font-size:20px;margin-bottom:6px}
+.mode-name{font-size:14px;font-weight:600;color:var(--color-text-primary)}
+.mode-desc{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.filter-label{font-size:12px;color:var(--color-text-secondary)}
+.tag{padding:5px 11px;border-radius:99px;border:1px solid var(--color-border-secondary);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .12s}
+.tag.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.source-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.start-btn{width:100%;padding:14px;border-radius:10px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.start-btn:hover{opacity:.85}
+.link-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--color-text-secondary);font-family:inherit;text-decoration:underline;margin-top:10px;display:block;text-align:center}
+.quiz{padding:1rem 0 2rem}
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.quiz-back{background:none;border:none;cursor:pointer;font-size:13px;color:var(--color-text-secondary);padding:6px 10px;border-radius:8px;font-family:inherit}
+.quiz-back:hover{background:var(--color-background-secondary)}
+.quiz-progress-text{font-size:13px;color:var(--color-text-secondary);font-family:'IBM Plex Mono',monospace}
+.progress-bar{height:4px;background:var(--color-background-secondary);border-radius:99px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:#1D9E75;border-radius:99px;transition:width .3s}
+.q-meta{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.q-tag{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600}
+.q-tag.tema{background:#E6F1FB;color:#185FA5}
+.q-tag.src-docx{background:#EEEDFE;color:#3C3489}
+.q-tag.src-kah{background:#E1F5EE;color:#0F6E56}
+.q-tag.src-rep{background:#FAEEDA;color:#633806}
+.question-text{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:1.25rem}
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.option{padding:12px 16px;border-radius:10px;border:1.5px solid var(--color-border-secondary);cursor:pointer;font-size:14px;color:var(--color-text-primary);transition:all .12s;display:flex;align-items:flex-start;gap:10px;line-height:1.45;background:var(--color-background-primary);text-align:left}
+.option:hover:not(.disabled){border-color:#185FA5;background:#E6F1FB;color:#185FA5}
+.option.correct{border-color:#1D9E75;background:#E1F5EE;color:#0F6E56}
+.option.wrong{border-color:#D85A30;background:#FAECE7;color:#993C1D}
+.option.show-correct{border-color:#1D9E75;background:#E1F5EE;color:#0F6E56}
+.option.disabled{cursor:default}
+.opt-letter{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;background:var(--color-background-secondary);padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.explanation{background:var(--color-background-secondary);border-radius:10px;padding:14px;font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:1rem;border-left:3px solid #1D9E75;display:none}
+.explanation.wrong-exp{border-left-color:#D85A30}
+.explanation.show{display:block}
+.next-btn{width:100%;padding:13px;border-radius:10px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:none}
+.next-btn.show{display:block}
+.flashcard-wrap{perspective:1000px;margin:1.5rem 0;cursor:pointer}
+.flashcard{position:relative;width:100%;min-height:180px;transition:transform .5s;transform-style:preserve-3d}
+.flashcard.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;min-height:180px;backface-visibility:hidden;border-radius:14px;border:1.5px solid var(--color-border-secondary);padding:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.card-front{background:var(--color-background-primary)}
+.card-back{background:var(--color-background-secondary);transform:rotateY(180deg)}
+.card-hint{font-size:11px;color:var(--color-text-secondary);margin-bottom:12px}
+.card-q{font-size:15px;font-weight:600;line-height:1.5}
+.card-a{font-size:14px;color:#1D9E75;font-weight:600;line-height:1.5}
+.card-controls{display:flex;gap:8px}
+.card-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--color-border-secondary);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.card-btn.yes{background:#E1F5EE;color:#1D9E75;border-color:#1D9E75}
+.card-btn.no{background:#FAECE7;color:#D85A30;border-color:#D85A30}
+.results{padding:1.5rem 0;text-align:center}
+.score-circle{width:110px;height:110px;border-radius:50%;margin:0 auto 1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.score-circle.pass{background:#E1F5EE;color:#1D9E75;border:3px solid #1D9E75}
+.score-circle.fail{background:#FAECE7;color:#D85A30;border:3px solid #D85A30}
+.score-circle .score-label{font-size:11px;font-weight:500;font-family:'Space Grotesk',sans-serif}
+.results-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.results-sub{font-size:14px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.results-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.5rem}
+.res-stat{background:var(--color-background-secondary);border-radius:10px;padding:12px}
+.res-num{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.res-num.g{color:#1D9E75}.res-num.r{color:#D85A30}.res-num.b{color:#185FA5}
+.res-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.review-list{text-align:left;margin-bottom:1.5rem}
+.review-title{font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.review-item{padding:10px 12px;border-radius:8px;background:#FAECE7;border-left:3px solid #D85A30;margin-bottom:6px;font-size:13px}
+.review-correct{font-size:12px;color:#1D9E75;margin-top:4px;font-weight:500}
+.res-btns{display:flex;gap:8px}
+.res-btn{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--color-border-secondary);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);transition:all .12s}
+.res-btn:hover{background:var(--color-background-secondary)}
+.res-btn.primary{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.cheatsheet{padding:1rem 0 2rem}
+.cs-back{background:none;border:none;cursor:pointer;font-size:14px;color:var(--color-text-secondary);padding:6px 0;font-family:inherit;display:flex;align-items:center;gap:6px;margin-bottom:1rem}
+.cs-title{font-size:18px;font-weight:700;margin-bottom:1rem}
+.cs-section{margin-bottom:10px;border:1px solid var(--color-border-tertiary);border-radius:10px;overflow:hidden}
+.cs-head{padding:12px 14px;background:var(--color-background-secondary);font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.cs-body{padding:12px 14px;font-size:13px;display:none}
+.cs-body.open{display:block}
+.cs-row{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:.5px solid var(--color-border-tertiary)}
+.cs-row:last-child{border-bottom:none}
+.cs-key{font-weight:600;color:var(--color-text-primary);min-width:150px;font-size:12px;flex-shrink:0}
+.cs-val{color:var(--color-text-secondary);font-size:12px;line-height:1.5}
+.hidden{display:none!important}
+</style>
+
+<div class="app" id="app">
+
+<!-- HOME -->
+<div class="home" id="screen-home">
+  <div class="home-title">📚 Simulador IP2</div>
+  <div class="home-sub" id="home-sub">122 preguntas · Examen + Kahoot · Temas 8-15 IP2</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-total">122</div><div class="stat-label">Total</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Hechas</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">Correctas</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-pct">—</div><div class="stat-label">% Acierto</div></div>
+  </div>
+  <div class="mode-grid">
+    <button class="mode-btn active" onclick="setMode('simulacro',this)"><div class="mode-icon">⏱</div><div class="mode-name">Simulacro</div><div class="mode-desc">40 preguntas · como el examen real</div></button>
+    <button class="mode-btn" onclick="setMode('flashcards',this)"><div class="mode-icon">🃏</div><div class="mode-name">Flashcards</div><div class="mode-desc">Repasa conceptos girando cartas</div></button>
+    <button class="mode-btn" onclick="setMode('porTema',this)"><div class="mode-icon">📖</div><div class="mode-name">Por tema</div><div class="mode-desc">Estudia tema a tema</div></button>
+    <button class="mode-btn" onclick="setMode('fallos',this)"><div class="mode-icon">🎯</div><div class="mode-name">Mis fallos</div><div class="mode-desc">Solo las preguntas que fallas</div></button>
+    <button class="mode-btn" onclick="setMode('todas',this)"><div class="mode-icon">📋</div><div class="mode-name">Todas las preguntas</div><div class="mode-desc">Responde todas · con filtros</div></button>
+  </div>
+
+  <div id="filters-tema" class="filter-row" style="display:none">
+    <span class="filter-label">Tema:</span>
+    <span class="tag active" onclick="selTema(this,'todos')">Todos</span>
+    <span class="tag" onclick="selTema(this,'T8')">T8</span>
+    <span class="tag" onclick="selTema(this,'T9')">T9</span>
+    <span class="tag" onclick="selTema(this,'T10')">T10</span>
+    <span class="tag" onclick="selTema(this,'T11')">T11</span>
+    <span class="tag" onclick="selTema(this,'T12')">T12</span>
+    <span class="tag" onclick="selTema(this,'T13')">T13</span>
+    <span class="tag" onclick="selTema(this,'T14')">T14</span>
+    <span class="tag" onclick="selTema(this,'T15')">T15</span>
+  </div>
+
+  <div class="source-row" id="filters-source">
+    <span class="filter-label">Fuente:</span>
+    <span class="tag active" onclick="selSrc(this,'todas')">Todas</span>
+    <span class="tag" onclick="selSrc(this,'docx')">📝 Examen/PDFs (96)</span>
+    <span class="tag" onclick="selSrc(this,'kah')">🎮 Kahoot (26)</span>
+  </div>
+
+  <button class="start-btn" id="start-btn" onclick="startSession()">Empezar simulacro ↗</button>
+  <button class="link-btn" onclick="showCheatsheet()">Ver resumen por temas →</button>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz hidden" id="screen-quiz">
+  <div class="quiz-header">
+    <button class="quiz-back" onclick="goHome()">← Salir</button>
+    <span class="quiz-progress-text" id="q-progress">1/40</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="q-meta" id="q-meta"></div>
+  <div class="question-text" id="q-text"></div>
+  <div class="options" id="q-options"></div>
+  <div class="explanation" id="q-explanation"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Siguiente →</button>
+</div>
+
+<!-- FLASH -->
+<div class="quiz hidden" id="screen-flash">
+  <div class="quiz-header">
+    <button class="quiz-back" onclick="goHome()">← Salir</button>
+    <span class="quiz-progress-text" id="f-progress">1/—</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="f-fill" style="width:0%"></div></div>
+  <div class="q-meta" id="f-meta"></div>
+  <div class="flashcard-wrap" onclick="flipCard()">
+    <div class="flashcard" id="flashcard">
+      <div class="card-face card-front"><div class="card-hint">— toca para ver la respuesta —</div><div class="card-q" id="f-question"></div></div>
+      <div class="card-face card-back"><div class="card-hint">¿Lo sabías?</div><div class="card-a" id="f-answer"></div></div>
+    </div>
+  </div>
+  <div class="card-controls" id="card-controls" style="display:none">
+    <button class="card-btn no" onclick="cardResult(false)">✗ No lo sabía</button>
+    <button class="card-btn yes" onclick="cardResult(true)">✓ Lo sabía</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results hidden" id="screen-results">
+  <div class="score-circle" id="score-circle"><div id="score-pct">0%</div><div class="score-label" id="score-label">—</div></div>
+  <div class="results-title" id="res-title">Simulacro completado</div>
+  <div class="results-sub" id="res-sub"></div>
+  <div class="results-grid">
+    <div class="res-stat"><div class="res-num g" id="res-correct">0</div><div class="res-lbl">Correctas</div></div>
+    <div class="res-stat"><div class="res-num r" id="res-wrong">0</div><div class="res-lbl">Fallos</div></div>
+    <div class="res-stat"><div class="res-num b" id="res-total">0</div><div class="res-lbl">Total</div></div>
+  </div>
+  <div class="review-list" id="review-list"></div>
+  <div class="res-btns">
+    <button class="res-btn" onclick="goHome()">← Inicio</button>
+    <button class="res-btn primary" onclick="repeatFails()">Repetir fallos ↗</button>
+  </div>
+</div>
+
+<!-- CHEAT -->
+<div class="cheatsheet hidden" id="screen-cheat">
+  <button class="cs-back" onclick="goHome()">← Inicio</button>
+  <div class="cs-title">📋 Resumen por temas</div>
+  <div id="cheat-content"></div>
+</div>
+
+</div>
+
+<script>
+// ===================== BANCO COMPLETO DE PREGUNTAS IP2 =====================
+const Q = [
+{id:1,t:"T8",s:"docx",q:"¿Cuál de los siguientes no es un factor personal que influye en el emprendimiento?",o:["Educación y Capacitación Empresarial (EET)","Acceso a recursos financieros","Motivación","Apoyo familiar"],c:1,e:"Los factores <b>personales</b> son: motivación, apoyo familiar, educación y capacitación (EET), formación y experiencia. El acceso a recursos financieros es un factor <b>económico</b>."},
+{id:2,t:"T8",s:"docx",q:"¿Cuál de las siguientes opciones describe mejor el concepto de 'intraemprendimiento'?",o:["La creación de una nueva empresa por parte de un empleado que ha dejado su trabajo anterior","El proceso por el cual los empleados de una organización proponen y desarrollan nuevas ideas o proyectos para impulsar la competitividad de la empresa","Un programa gubernamental que ofrece financiación a empresas ya consolidadas","La colaboración entre dos o más empresas consolidadas para desarrollar un nuevo producto tecnológico"],c:1,e:"El <b>intraemprendimiento</b> es el acto de innovar dentro de una organización establecida, donde los empleados adoptan mentalidades emprendedoras para desarrollar nuevas ideas que impulsen el crecimiento de la empresa."},
+{id:3,t:"T8",s:"docx",q:"¿Cuál es una diferencia fundamental entre las empresas con personalidad jurídica y las que no la tienen?",o:["Las empresas con personalidad jurídica tributan por el IRPF, mientras que las otras lo hacen por el Impuesto de Sociedades","Solo las empresas sin personalidad jurídica necesitan inscribirse en el RETA","La responsabilidad de los socios es ilimitada en las formas sin personalidad jurídica, mientras que suele estar limitada al capital aportado en las que sí la tienen","Las empresas sin personalidad jurídica no pueden tener más de un socio"],c:2,e:"Las empresas <b>sin personalidad jurídica</b> tienen responsabilidad <b>ilimitada</b> (autónomo, CB, sociedad civil). Las sociedades mercantiles tienen responsabilidad <b>limitada al capital aportado</b> y tributan por el Impuesto de Sociedades."},
+{id:4,t:"T8",s:"docx",q:"Un grupo de tres amigos quiere abrir una consultoría. Desean que su responsabilidad se limite al capital que aporten y comenzar con la mínima inversión posible (1€). ¿Qué forma jurídica se adapta mejor a sus necesidades?",o:["Sociedad Anónima (S.A.)","Sociedad de Responsabilidad Limitada (S.L.)","Sociedad Cooperativa (S.Coop.)","Comunidad de Bienes"],c:1,e:"La <b>S.L.</b> requiere un capital mínimo de <b>1€</b>, responsabilidad limitada al capital aportado y puede tener mínimo 1 socio. La S.A. exige 60.000€ y la Cooperativa necesita mínimo 3 socios."},
+{id:5,t:"T8",s:"docx",q:"¿Cuál de las siguientes formas jurídicas empresariales no requiere una formalidad previa para su constitución?",o:["Sociedad Anónima (S.A.)","Sociedad Laboral","Empresario individual","Sociedad Limitada Unipersonal (S.L.U.)"],c:2,e:"El <b>empresario individual (autónomo)</b> no necesita formalidad previa ni inscripción en el Registro Mercantil. No requiere CIF y factura con su NIF. Solo debe darse de alta en el RETA."},
+{id:6,t:"T8",s:"docx",q:"¿Qué forma jurídica empresarial implica la participación de los trabajadores en el capital social y la gestión de la empresa, fomentando la cooperación y el reparto de beneficios?",o:["Sociedad Anónima (S.A.)","Sociedad Laboral","Sociedad Civil","Empresario individual"],c:1,e:"La <b>Sociedad Laboral</b> es aquella en la que los trabajadores tienen participación en el capital social y la gestión de la empresa. Se basa en la cooperación y el reparto de beneficios entre los empleados."},
+{id:7,t:"T8",s:"docx",q:"¿Cuál de las siguientes formas jurídicas de empresa requiere un mínimo de tres socios?",o:["Empresario individual","Sociedad Anónima (S.A.)","Sociedad Limitada Unipersonal (S.L.U.)","Sociedad Cooperativa (S.Coop.)"],c:3,e:"La <b>Sociedad Cooperativa</b> necesita <b>al menos 3 socios</b>, igual que la Sociedad Laboral. La S.L. y la S.A. pueden constituirse con 1 socio. La S.L.U. es expresamente unipersonal."},
+{id:8,t:"T8",s:"docx",q:"Para constituir una sociedad mercantil como una S.L. o una S.A., ¿cuál es uno de los primeros trámites obligatorios que se debe realizar?",o:["Darse de alta en el Impuesto de Actividades Económicas (IAE)","Obtener la Certificación Negativa del Nombre en el Registro Mercantil Central","Inscribir a los trabajadores en el Régimen General de la Seguridad Social","Solicitar la licencia de actividad en el Ayuntamiento"],c:1,e:"El primer trámite para constituir una sociedad mercantil es obtener la <b>Certificación Negativa del Nombre</b> en el Registro Mercantil Central, que declara que el nombre está libre. Tiene 3 meses de vigencia renovables."},
+{id:9,t:"T8",s:"docx",q:"¿Cuál de los siguientes NO es un trámite laboral de puesta en marcha?",o:["Alta en el censo de empresarios, profesionales y retenedores","Alta en el Régimen Especial de Trabajadores Autónomos (RETA)","Inscripción de la empresa en la Seguridad Social","Alta en el Régimen General de la Seguridad Social de los trabajadores"],c:0,e:"El <b>alta en el censo de empresarios, profesionales y retenedores</b> es un trámite <b>fiscal</b>, no laboral. Los trámites laborales son: inscripción en SS, alta en RETA (autónomos), alta en Régimen General (trabajadores contratados) y Libro de Visitas."},
+{id:10,t:"T8",s:"docx",q:"¿Qué caracteriza a la Sociedad Cooperativa?",o:["Se necesitan mínimo 3 socios","No necesita constituir estatutos","Capital mínimo de 60.000€","No tiene personalidad jurídica"],c:0,e:"La <b>Sociedad Cooperativa</b> necesita <b>mínimo 3 socios</b>, tiene personalidad jurídica, capital mínimo de 2.000€ y tributa por el Impuesto de Sociedades. Su estructura es democrática y participativa."},
+{id:11,t:"T8",s:"docx",q:"¿Cuál es una característica de la Comunidad de Bienes?",o:["Se necesitan dos socios o más","La responsabilidad frente a deudas es limitada","Tiene personalidad jurídica","Capital mínimo para su constitución de 2.000€"],c:0,e:"La <b>Comunidad de Bienes</b> requiere <b>mínimo 2 socios</b>, no tiene personalidad jurídica, la responsabilidad es <b>ilimitada</b> y no hay capital mínimo legal. Tributa por el IRPF."},
+{id:12,t:"T8",s:"docx",q:"Un emprendedor crea una empresa para desarrollar una aplicación móvil con el objetivo de que crezca masivamente y de forma rápida en el mercado internacional. ¿Qué tipo de emprendimiento está llevando a cabo?",o:["Emprendimiento social","Emprendimiento por oportunidad","Emprendimiento por necesidad","Emprendimiento escalable"],c:3,e:"El <b>emprendimiento escalable</b> hace referencia a la creación de negocios con un potencial rápido y sostenible de crecimiento masivo, aprovechando tecnologías innovadoras y modelos de negocio eficientes para expandirse de forma rentable."},
+{id:13,t:"T8",s:"docx",q:"¿Qué foco tiene el liderazgo transaccional?",o:["Improvisación","Ambigüedad","Innovación radical","Recompensas y castigos"],c:3,e:"El <b>liderazgo transaccional</b> se basa en el intercambio de <b>recompensas y castigos</b> para motivar y dirigir a los seguidores hacia objetivos específicos. Establece expectativas de rendimiento claras."},
+{id:14,t:"T9",s:"docx",q:"¿Cuál es el objetivo principal de la Innovación Social?",o:["Impulsar exclusivamente productos tecnológicos que generen grandes beneficios comerciales","Transformar las estructuras de mercado para favorecer solo a las grandes corporaciones","Desarrollar e implementar soluciones creativas y sostenibles para abordar desafíos sociales, económicos o ambientales, generando un impacto positivo en la sociedad","Limitar el acceso a recursos a aquellas personas que no pueden iniciar sus propios negocios"],c:2,e:"La <b>innovación social</b> se refiere al desarrollo e implementación de soluciones creativas y sostenibles para abordar desafíos sociales, económicos o ambientales, con el objetivo de generar un impacto positivo en la sociedad y mejorar la calidad de vida."},
+{id:15,t:"T9",s:"docx",q:"¿Cuál es el enfoque empresarial que promueve diseñar procesos para minimizar el desperdicio y maximizar la reutilización de recursos, contribuyendo a la conservación ambiental?",o:["Innovación holística","Balance del Bien Común","Economía circular","Lean Startup"],c:2,e:"La <b>economía circular</b> busca minimizar el desperdicio y maximizar la reutilización de recursos. Al adoptar sus principios, las empresas diseñan procesos que contribuyen a la conservación del medio ambiente."},
+{id:16,t:"T9",s:"docx",q:"¿Cuál es el objetivo principal de la Sostenibilidad en el contexto del emprendimiento?",o:["Reducir solo la equidad salarial","Garantizar la viabilidad económica a corto plazo","Minimizar el impacto negativo en el medio ambiente y promover prácticas responsables","Limitar el uso de las tecnologías emergentes"],c:2,e:"La <b>sostenibilidad</b> se centra en satisfacer las necesidades actuales sin comprometer las de las generaciones futuras. Implica minimizar el impacto negativo en el medio ambiente, promover prácticas responsables y la conservación de recursos naturales."},
+{id:17,t:"T9",s:"docx",q:"¿Cuál es uno de los objetivos principales de la transformación digital en las empresas?",o:["Reducir la eficiencia operativa","Limitar el acceso a nuevos mercados","Adaptarse a un entorno empresarial cada vez menos digitalizado","Mejorar la experiencia del cliente"],c:3,e:"La <b>transformación digital</b> permite a las empresas mejorar la experiencia del cliente, optimizar la eficiencia operativa, llegar a nuevos mercados, innovar más rápidamente y mantenerse competitivas en el mercado."},
+{id:18,t:"T9",s:"docx",q:"¿Cuál es el concepto central de la metodología Lean Startup que se utiliza para validar las hipótesis clave sobre el mercado y el cliente antes de realizar grandes inversiones?",o:["El Balance del Bien Común","La Capa de Propuesta de Valor Social","El Customer Relationship Management (CRM)","El Producto Mínimo Viable (MVP)"],c:3,e:"El <b>MVP (Producto Mínimo Viable)</b> es el concepto central del Lean Startup: se crea una versión básica del producto para validar las hipótesis clave sobre el mercado y el cliente antes de hacer una gran inversión económica."},
+{id:19,t:"T9",s:"docx",q:"¿Qué papel desempeñan los emprendedores en la consecución de los ODS según la Agenda 2030?",o:["Son responsables de la supervisión y cumplimiento de los ODS","No tienen un papel relevante en la Agenda 2030","Contribuyen al desarrollo sostenible mediante la innovación y la creación de empleo","Su actividad no está relacionada con los ODS"],c:2,e:"Los emprendedores son agentes de cambio que contribuyen a la <b>Agenda 2030</b> desarrollando soluciones innovadoras para los ODS, promoviendo el emprendimiento inclusivo, creando empleo y desarrollando resiliencia ante el cambio climático."},
+{id:20,t:"T9",s:"docx",q:"¿En qué se centra la Capa de Propuesta de Valor Social del Modelo Canvas de triple capa?",o:["Mapear las actividades clave de impacto","La generación de costos y la estructura empresarial","Identificar los beneficios sociales o ambientales proporcionados a clientes","Validar el Producto Mínimo Viable (MVP)"],c:2,e:"La <b>Capa de Propuesta de Valor Social</b> del Canvas de triple capa se centra en identificar los beneficios sociales o ambientales que la empresa proporciona a sus clientes o beneficiarios."},
+{id:21,t:"T9",s:"docx",q:"¿Qué papel desempeña la tecnología en las empresas?",o:["Minimiza la eficiencia operativa","Limita la innovación en productos y servicios","Facilita la mejora de procesos y la creación de productos","No tiene impacto en la relación con los clientes"],c:2,e:"La <b>tecnología</b> desempeña un papel crucial en las empresas: facilita la mejora de procesos, impulsa la innovación en productos y servicios, mejora la relación con los clientes y permite la transformación digital."},
+{id:22,t:"T9",s:"docx",q:"¿Qué describe la capa de Lógica de Impacto en el Modelo Canvas de Triple Capa?",o:["Cómo la empresa crea impacto económico","Cómo la empresa genera ingresos","Cómo la empresa crea impacto social o ambiental","Cómo la empresa identifica oportunidades de negocio"],c:2,e:"La <b>Capa de Lógica de Impacto</b> describe cómo la empresa crea ese impacto social o ambiental, mapeando las actividades clave, los recursos necesarios y los resultados esperados."},
+{id:23,t:"T9",s:"docx",q:"¿Qué es la creatividad en el contexto empresarial?",o:["La capacidad de generar ideas originales e innovadoras que aporten valor","La capacidad de seguir métodos establecidos sin desviarse","La capacidad de repetir tareas rutinarias de manera eficiente","La capacidad de gestionar proyectos grandes y complejos"],c:0,e:"La <b>creatividad</b> en el contexto empresarial se refiere a la capacidad de generar ideas originales e innovadoras que puedan aportar valor a la empresa, ya sea a través de nuevos productos, servicios, procesos o modelos de negocio."},
+{id:24,t:"T10",s:"docx",q:"¿Cuál es uno de los beneficios clave de las inversiones en I+D+I?",o:["Restringe la creatividad dentro de la empresa","Limita la capacidad de innovación","No tiene impacto en el crecimiento económico","Impulsa la innovación y la creatividad"],c:3,e:"Uno de los beneficios clave de las inversiones en <b>I+D+I</b> es su capacidad para impulsar la innovación y la creatividad dentro de la empresa, permitiendo desarrollar soluciones innovadoras y mantenerse a la vanguardia de la competencia."},
+{id:25,t:"T10",s:"docx",q:"Según la clasificación fundamental ofrecida por el Manual de Oslo, ¿cuáles son los dos tipos principales de innovación?",o:["Innovación incremental e Innovación disruptiva","Innovación de productos e Innovación de proceso empresarial","Innovación de modelo de negocio e Innovación organizacional","Innovación en marketing e Innovación ambiental"],c:1,e:"El <b>Manual de Oslo</b> divide la innovación en dos tipos fundamentales: <b>innovación de productos</b> (bien o servicio nuevo o mejorado) e <b>innovación de proceso empresarial</b> (nuevo o mejorado proceso de negocio)."},
+{id:26,t:"T10",s:"docx",q:"¿Cuál es una responsabilidad del agente de innovación?",o:["Fomentar la resistencia al cambio","Identificar necesidades y desafíos","Limitar la colaboración entre equipos","Restringir la participación ciudadana"],c:1,e:"Entre las responsabilidades del <b>agente de innovación</b> se encuentran: la identificación de necesidades y desafíos, la búsqueda de oportunidades para la mejora y la implementación de procesos y prácticas innovadoras."},
+{id:27,t:"T10",s:"docx",q:"¿Cuál es el papel crucial que desempeña el agente de innovación dentro de una organización?",o:["Centrarse en el cumplimiento riguroso de procedimientos para limitar la experimentación","Establecer un marco jerárquico y de control buscando la estabilidad para preservar lo existente","Determinar el gasto en I+D de manera que se garantice un aumento inmediato en los beneficios","Actuar como líder, facilitador y defensor del proceso de innovación, promoviendo la creatividad y el aprendizaje"],c:3,e:"El <b>agente de innovación</b> actúa como líder, facilitador y defensor del proceso de innovación, identificando oportunidades, promoviendo la creatividad y el aprendizaje, y facilitando la implementación de nuevas ideas y tecnologías."},
+{id:28,t:"T10",s:"docx",q:"¿Qué estilo de liderazgo se caracteriza por guiar a los individuos dentro de una organización mediante reglas claras y dirección facilitada por el líder?",o:["Liderazgo participativo","Liderazgo interactivo","Liderazgo administrativo","Liderazgo transformacional"],c:2,e:"El <b>liderazgo administrativo</b> se caracteriza por guiar a los individuos mediante reglas claras y la dirección facilitada por el líder. Se asocia con procesos de mejora incremental y usa el control, la jerarquía y el monitoreo."},
+{id:29,t:"T10",s:"docx",q:"¿Qué estilo de liderazgo en innovación se caracteriza por basarse en el intercambio de recompensas y castigos para motivar y dirigir a los seguidores hacia objetivos específicos?",o:["Liderazgo transaccional","Liderazgo interactivo","Liderazgo participativo","Liderazgo administrativo"],c:0,e:"El <b>liderazgo transaccional</b> se basa en el intercambio de recompensas y castigos para motivar a los seguidores. Establece expectativas de rendimiento y recompensa a los empleados por alcanzar metas predefinidas."},
+{id:30,t:"T10",s:"docx",q:"¿Cuál es un mito falso sobre las inversiones en I+D+I?",o:["Las inversiones en I+D+I siempre garantizan un aumento inmediato en los beneficios","Las inversiones en I+D+I no son importantes para el crecimiento a largo plazo","Las inversiones en I+D+I no tienen inconvenientes ni riesgos asociados","Las inversiones en I+D+I solo benefician a las grandes empresas"],c:0,e:"Es importante tener en cuenta que la inversión en <b>I+D+I</b> puede ser fundamental para el crecimiento a largo plazo, pero <b>no garantiza un aumento inmediato en los beneficios</b>. Tiene inconvenientes y riesgos asociados."},
+{id:31,t:"T10",s:"docx",q:"¿Qué función tiene el agente de innovación?",o:["Bloquear ideas y coartar la creatividad","Aislar equipos","Eliminar posibles riesgos de nuevos productos","Facilitar el cambio y la innovación"],c:3,e:"El <b>agente de innovación</b> desempeña un papel fundamental facilitando el cambio y la innovación dentro de una organización, actuando como líder, catalizador y facilitador."},
+{id:32,t:"T10",s:"docx",q:"Si una empresa que vende robots aspiradores cambia el producto añadiéndole una batería nueva para mejorar sus especificaciones, ¿qué tipo de innovación se considera?",o:["Innovación organizacional","Innovación en marketing","Innovación de producto","Innovación ambiental o social"],c:2,e:"El cambio en el producto añadiendo una batería nueva es una <b>innovación de producto</b>, ya que se introduce una mejora significativa en las especificaciones de rendimiento del bien ofrecido."},
+{id:33,t:"T10",s:"docx",q:"¿Cuál de los siguientes no es un beneficio significativo que aporta la innovación?",o:["Competitividad","Eficiencia","Mejora de la logística","Satisfacción del cliente"],c:2,e:"Los beneficios de la innovación para las empresas son: <b>competitividad</b> (diferenciación y ventaja), <b>eficiencia</b> (optimización de procesos), <b>crecimiento</b> (expansión de mercados) y <b>satisfacción del cliente</b>. La mejora de la logística no es un beneficio específico de la innovación."},
+{id:34,t:"T11",s:"docx",q:"¿Cuál de las siguientes no es una regla básica que debamos aplicar en el Brainstorming?",o:["Construir","No juzgar","No hablar","No censurar"],c:2,e:"Las reglas del <b>brainstorming</b> incluyen: no juzgar, no censurar, construir sobre las ideas de otros y fomentar la participación. 'No hablar' no es una regla, ya que el brainstorming se basa precisamente en la comunicación oral de ideas."},
+{id:35,t:"T11",s:"docx",q:"Indica cuál de los siguientes NO forma parte del llamado Método SCAMPER",o:["Sustituir","Combinar","Acelerar","Reorganizar"],c:2,e:"<b>SCAMPER</b> son las siglas de: Sustituir, Combinar, Adaptar, Modificar, Proponer otros usos, Eliminar, Reorganizar. <b>Acelerar</b> no forma parte del método."},
+{id:36,t:"T11",s:"docx",q:"Es una herramienta utilizada para describir, diseñar, desafiar, inventar y pivotar modelos de negocio",o:["Design thinking","Modelo CANVAS","Elevator Pitch","Empathy Map"],c:1,e:"El <b>Modelo Canvas</b> (Business Model Canvas) es una herramienta estratégica creada por Alexander Osterwalder e Yves Pigneur, utilizada para describir, diseñar, desafiar, inventar y pivotar modelos de negocio."},
+{id:37,t:"T11",s:"docx",q:"Es un enfoque centrado en el usuario que se utiliza para resolver problemas y generar ideas de manera creativa e innovadora",o:["Design thinking","Modelo CANVAS","Elevator Pitch","Empathy Map"],c:0,e:"El <b>Design Thinking</b> es un enfoque centrado en el usuario que se utiliza para resolver problemas y generar ideas de manera creativa e innovadora. Se fundamenta en la colaboración multidisciplinaria, la empatía con el usuario y la experimentación rápida."},
+{id:38,t:"T11",s:"docx",q:"El área del Modelo Canvas que se refiere a 'para quién se está creando valor' es:",o:["Propuesta de valor","Segmentos de cliente","Canales de distribución","Relación con el cliente"],c:1,e:"Los <b>Segmentos de cliente</b> del Modelo Canvas responden a la pregunta '¿Para quién se está creando valor?'. En este bloque se identifican los diferentes grupos de clientes a los que se dirige el negocio."},
+{id:39,t:"T11",s:"docx",q:"¿Cuál de las siguientes no se considera relevante a la hora de desarrollar una idea de negocio?",o:["Identificar una oportunidad","La competencia y la diferenciación","El modelo de negocio","La adquisición de un local"],c:3,e:"Los aspectos relevantes al desarrollar una idea de negocio son: identificar la oportunidad, propuesta de valor, mercado objetivo, competencia, viabilidad técnica y económica, modelo de negocio, estrategia de marketing e innovación. <b>La adquisición de un local</b> es una decisión operativa posterior, no esencial en la fase de idea."},
+{id:40,t:"T11",s:"docx",q:"¿Cuáles de las siguientes no es una forma usual de creación de ideas de negocio?",o:["Experiencia personal","Revisión de redes sociales","Darle a un producto un uso diferente","Observación del entorno"],c:1,e:"Las formas usuales de generar ideas de negocio incluyen: experiencia personal, detectar problemas del entorno, darle un nuevo uso a productos existentes, identificar tendencias y observación del entorno. La <b>revisión de redes sociales</b> no es una técnica reconocida de generación de ideas."},
+{id:41,t:"T11",s:"docx",q:"¿Qué técnica de generación de ideas analiza y compara las mejores prácticas de empresas líderes en el sector?",o:["Design Thinking","Método SCAMPER","Benchmarking","Brainstorming"],c:2,e:"El <b>benchmarking</b> consiste en analizar y comparar las mejores prácticas y procesos de empresas líderes en el sector para identificar oportunidades de mejora y generar nuevas ideas de negocio."},
+{id:42,t:"T11",s:"docx",q:"Completa: SCAMPER incluye Sustituir y...",o:["Copiar literal","Combinar","Acotar la actividad","Multiplicar"],c:1,e:"<b>SCAMPER</b>: Sustituir, <b>Combinar</b>, Adaptar, Modificar, Proponer otros usos, Eliminar, Reorganizar. La C corresponde a 'Combinar'."},
+{id:43,t:"T11",s:"docx",q:"¿Qué analiza el benchmarking principalmente?",o:["Tendencias de los clientes","Evolución histórica del mercado","Regulación y normativas","Mejores prácticas de la competencia"],c:3,e:"El <b>benchmarking</b> se centra en analizar las <b>mejores prácticas de la competencia y empresas de referencia</b> en el sector. El proceso incluye: identificar áreas de interés, identificar empresas de referencia, recopilar información, analizar y aplicar las lecciones aprendidas."},
+{id:44,t:"T12",s:"docx",q:"¿Qué es el análisis del macroentorno?",o:["Un análisis de factores externos que pueden afectar a la empresa","Un análisis de la estructura interna de la empresa","Un análisis de los competidores directos","Una evaluación de los recursos financieros de la empresa"],c:0,e:"El <b>análisis del macroentorno</b> se refiere al estudio de los factores externos que pueden afectar de manera significativa a la empresa, pero que están fuera de su control. Estos factores se clasifican usando el acrónimo PESTEL."},
+{id:45,t:"T12",s:"docx",q:"Los criterios de edad, sexo, nivel de estudios o situación socioeconómica para la segmentación del mercado, se refieren a:",o:["Segmentación demográfica","Segmentación geográfica","Segmentación conductual","Segmentación psicográfica"],c:0,e:"La <b>segmentación demográfica</b> utiliza como criterios la edad, el sexo o la situación socioeconómica: ingresos o poder adquisitivo, nivel de estudios, etapa de la vida, tipo y tamaño de familia, ocupación."},
+{id:46,t:"T12",s:"docx",q:"Versión simplificada de un producto o servicio que permite a una empresa probar sus hipótesis de negocio con el mínimo esfuerzo y recursos posibles:",o:["Producto Mínimo Viable (PMV)","Prueba de producto","Producto mínimo probable","Producto mínimo esfuerzo"],c:0,e:"El <b>Producto Mínimo Viable (PMV)</b> es una versión simplificada de un producto o servicio que permite a una empresa probar sus hipótesis de negocio con el mínimo esfuerzo y recursos posibles, obteniendo retroalimentación real de los clientes."},
+{id:47,t:"T12",s:"docx",q:"Dentro del análisis del macroentorno, ¿la inflación es un factor?",o:["Político","Social","Tecnológico","Económico"],c:3,e:"La inflación es un factor <b>económico</b> dentro del análisis PESTEL. Los factores económicos incluyen la situación económica general, las tasas de interés, la inflación, el crecimiento del PIB, etc."},
+{id:48,t:"T12",s:"docx",q:"Una vez que el producto ha sido desarrollado y producido, ¿en qué acción se incluye la elaboración de estrategias y acciones para dar a conocer el producto y atraer clientes?",o:["Ventas y atención al cliente","Análisis de resultados","Plan de lanzamiento","Actualizaciones y mejoras"],c:2,e:"El <b>plan de lanzamiento</b> incluye las estrategias y acciones a seguir para dar a conocer el producto y atraer a los clientes. Forma parte de la fase de lanzamiento y comercialización."},
+{id:49,t:"T12",s:"docx",q:"Cuando realizamos una segmentación del mercado en función de criterios como la edad o el poder adquisitivo de los clientes, ¿qué tipo de segmentación se ha realizado?",o:["Geográfica","Demográfica","Psicográfica","Conductual"],c:1,e:"La <b>segmentación demográfica</b> se basa en criterios como la edad, el sexo o la situación socioeconómica (ingresos/poder adquisitivo, nivel de estudios, ocupación, etc.)."},
+{id:50,t:"T12",s:"docx",q:"¿Qué función externa cumple el plan de empresa?",o:["Seguimiento y valoración interna","Tarjeta de presentación","Manual interno para trabajadores","Analizar el mercado"],c:1,e:"Externamente, el plan de empresa funciona como una <b>'tarjeta de presentación'</b>. Permite presentar la idea de forma profesional, clara, responsable y coherente a organismos e instituciones que podrían apoyarla con recursos técnicos y/o económicos."},
+{id:51,t:"T12",s:"docx",q:"¿Cuál incluye el PESTEL?",o:["Recursos humanos","Factores políticos","Políticas de marketing de la empresa","Hábitos personales"],c:1,e:"<b>PESTEL</b> analiza los factores del macroentorno: <b>P</b>olíticos, <b>E</b>conómicos, <b>S</b>ociales, <b>T</b>ecnológicos, <b>E</b>cológicos y <b>L</b>egales. Los recursos humanos, las políticas de marketing y los hábitos personales son elementos internos o del microentorno."},
+{id:52,t:"T12",s:"docx",q:"¿Qué analizan los factores económicos de la herramienta PESTEL?",o:["Misión y valores","Plan de ventas","Organigrama de la empresa","Inflación"],c:3,e:"Los <b>factores económicos</b> del PESTEL se refieren a las condiciones económicas que pueden afectar a la empresa: situación económica general, tasas de interés, <b>inflación</b>, crecimiento del PIB, etc."},
+{id:53,t:"T12",s:"docx",q:"¿Qué abarca el microentorno?",o:["Política fiscal","Intermediarios","Factores ambientales","Economía del país"],c:1,e:"El <b>microentorno</b> se centra en variables más específicas relacionadas con la empresa, como los competidores, los clientes, los proveedores e <b>intermediarios</b>. Es un entorno en el que la empresa sí puede influir."},
+{id:54,t:"T12",s:"docx",q:"¿Cuándo conviene rehacer el plan de empresa?",o:["Cierre fiscal al final de año","Con el despido de un trabajador","Entramos en nuevos mercados","Modificamos el envase de uno de nuestros productos"],c:2,e:"El plan de empresa debe rehacerse en momentos como: puesta en marcha de una empresa, lanzamiento de nuevos productos o servicios, <b>entrada en nuevos mercados</b> y reestructuración o reorganización de la estructura empresarial."},
+{id:55,t:"T12",s:"docx",q:"Completa: el plan de empresa debe ser...",o:["Estático y riguroso","Vivo y flexible","Rígido e inmutable","Solo a nivel interno de la empresa"],c:1,e:"El plan de empresa debe mantenerse '<b>vivo y flexible</b>'. Es un documento que debe actualizarse en distintos momentos: puesta en marcha, lanzamiento de nuevos productos, entrada en nuevos mercados o reestructuración."},
+{id:56,t:"T12",s:"docx",q:"¿Qué tipo de mercado se considera cuando nuestra empresa opera en varios países al mismo tiempo?",o:["Local","Nacional","Internacional","Regional"],c:2,e:"Según la segmentación geográfica, cuando una empresa opera en varios países al mismo tiempo se trata de un mercado <b>internacional</b>. Los ámbitos pueden ser: local, regional, nacional o internacional."},
+{id:57,t:"T13",s:"docx",q:"Según la definición que se proporciona, ¿cuál es la finalidad fundamental del marketing en la empresa?",o:["Es el conjunto de actividades que una empresa realiza para identificar, anticipar y satisfacer las necesidades de sus clientes de manera rentable","Se centra exclusivamente en la distribución de productos mediante la selección de canales de venta","Es el valor monetario que se asigna a un producto o servicio","Consiste únicamente en comunicar un mensaje promocional a través de medios pagados"],c:0,e:"El <b>marketing</b> es el conjunto de actividades que una empresa realiza para <b>identificar, anticipar y satisfacer las necesidades de sus clientes de manera rentable</b>. Abarca desde el análisis del mercado hasta el diseño, promoción, distribución y venta."},
+{id:58,t:"T13",s:"docx",q:"Dentro del concepto de Marketing-Mix o las '4 Ps', ¿a qué variable se refieren las decisiones sobre la selección de canales de distribución, logística, almacenamiento y ubicación de puntos de venta?",o:["Producto (Product)","Distribución (Place)","Precio (Price)","Promoción (Promotion)"],c:1,e:"La <b>Distribución (Place)</b> se refiere a los canales de distribución utilizados para llevar el producto o servicio al cliente final. Incluye decisiones sobre canales de distribución, logística, almacenamiento, gestión de inventarios y ubicación de puntos de venta."},
+{id:59,t:"T13",s:"docx",q:"Entre las diversas técnicas de marketing, ¿cuál se refiere específicamente a estrategias creativas y de bajo presupuesto que buscan sorprender y captar la atención del público de manera inesperada?",o:["Marketing de guerrilla","Marketing de influencia","Promoción de ventas","Publicidad"],c:0,e:"El <b>marketing de guerrilla</b> se refiere a estrategias de marketing creativas y de bajo presupuesto que buscan sorprender y captar la atención del público de manera inesperada. Incluye acciones de street marketing, eventos especiales, intervenciones en espacios públicos, etc."},
+{id:60,t:"T13",s:"docx",q:"¿Cuál es una característica importante del plan de marketing?",o:["Enfoque en la gestión de recursos humanos","Exclusiva atención a los objetivos financieros","Uso exclusivo de canales de distribución tradicionales","Adaptarse a los cambios del mercado"],c:3,e:"Una característica importante del plan de marketing es la <b>flexibilidad y adaptabilidad</b>: ha de ser lo suficientemente flexible como para adaptarse a los cambios del entorno y a las necesidades del mercado."},
+{id:61,t:"T13",s:"docx",q:"¿Cuál de los siguientes no es uno de los elementos del marketing mix?",o:["Producto","Proveedores","Precio","Promoción"],c:1,e:"Las <b>4 Ps del Marketing Mix</b> son: Producto, Precio, Distribución (Place) y Promoción. Los <b>proveedores</b> no forman parte del marketing mix; son parte del microentorno de la empresa."},
+{id:62,t:"T13",s:"docx",q:"¿Cuál es una característica esencial que debe poseer un plan de marketing para asegurar su éxito y relevancia a largo plazo?",o:["Debe enfocarse únicamente en las acciones a corto plazo","Debe evitar cualquier tipo de medición","Ha de ser lo suficientemente flexible y adaptable para responder a los cambios del entorno y a las necesidades del mercado","Su estructura formal debe omitir la definición de objetivos"],c:2,e:"El plan de marketing debe incluir <b>flexibilidad y adaptabilidad</b>, orientación al cliente, medición y seguimiento, coherencia y consistencia, y enfoque estratégico alineado con los objetivos generales de la empresa."},
+{id:63,t:"T13",s:"docx",q:"¿Qué 'P' del marketing mix define el valor monetario?",o:["Promoción","Producto","Precio","Plaza"],c:2,e:"El <b>Precio (Price)</b> se refiere al valor monetario que se asigna a un producto o servicio. Determinar el precio adecuado es crucial para el éxito de una empresa, ya que afecta directamente a la percepción del valor por parte del cliente y a la rentabilidad."},
+{id:64,t:"T13",s:"docx",q:"¿Qué técnica de marketing sorprende a los ciudadanos y utiliza bajo presupuesto?",o:["Marketing de contenidos","Marketing de influencia","Marketing de guerrilla","Marketing de redes sociales"],c:2,e:"El <b>marketing de guerrilla</b> utiliza estrategias creativas y de <b>bajo presupuesto</b> que buscan sorprender y captar la atención del público de manera inesperada. Es especialmente efectivo para llegar a audiencias jóvenes."},
+{id:65,t:"T13",s:"docx",q:"¿Qué tipo de marketing es una evolución del marketing tradicional que se enfoca en tratar a los clientes como seres humanos completos, con mente, corazón y espíritu?",o:["El marketing con causa","El marketing de guerrilla","El marketing 3.0","El marketing outbound"],c:2,e:"El <b>marketing 3.0</b> es una evolución del marketing tradicional que se enfoca en tratar a los clientes como seres humanos completos, con mente, corazón y espíritu, yendo más allá de la satisfacción de necesidades."},
+{id:66,t:"T13",s:"docx",q:"En relación con el Departamento de Comunicación, ¿qué herramientas son aquellas destinadas a crear y mantener relaciones estables y duraderas entre la empresa y sus públicos de interés?",o:["Promoción de ventas","Marketing directo","Publicidad","Relaciones públicas"],c:3,e:"Las <b>Relaciones públicas</b> son las herramientas destinadas a crear y mantener en el tiempo relaciones estables y duraderas entre la empresa y sus públicos de interés (stakeholders)."},
+{id:67,t:"T13",s:"docx",q:"Conjunto de actividades que una empresa realiza para identificar, anticipar y satisfacer las necesidades de sus clientes de manera rentable:",o:["Marketing","Análisis de mercado","Análisis de público","Marca personal"],c:0,e:"Esta es la definición de <b>Marketing</b>: el conjunto de actividades que una empresa realiza para identificar, anticipar y satisfacer las necesidades de sus clientes de manera rentable."},
+{id:68,t:"T14",s:"docx",q:"¿Cuál es el concepto de viabilidad financiera definido como la cantidad de ventas necesaria para que los costes fijos totales sean cubiertos?",o:["Análisis de sensibilidad","Punto de equilibrio o punto muerto","Retorno de la inversión (ROI)","Flujo de efectivo"],c:1,e:"El <b>punto de equilibrio o punto muerto</b> es la cantidad de ventas en la cual los costes fijos totales son compensados por la diferencia entre el precio de venta y el coste variable unitario. A partir de ese nivel, la empresa empieza a obtener beneficios."},
+{id:69,t:"T14",s:"docx",q:"Cantidad de ventas en la cual, los costes fijos totales son compensados por la diferencia entre el precio de venta y el coste variable unitario:",o:["Punto de equilibrio","Costes iniciales","Flujo de efectivo","Rentabilidad"],c:0,e:"Esta es la definición exacta del <b>punto de equilibrio (punto muerto)</b>. A partir de ese nivel de ventas, la empresa comienza a generar beneficios."},
+{id:70,t:"T14",s:"docx",q:"¿Por qué es importante el presupuesto de inversión?",o:["Porque desglosa todos los costos asociados con la inversión inicial","Porque desglosa los gastos de alquiler de oficina","Porque desglosa los gastos de transporte","Porque desglosa los gastos de sueldos y salarios"],c:0,e:"El <b>presupuesto de inversión</b> es importante porque es fundamental elaborar un presupuesto detallado que desglose <b>todos los costos asociados con la inversión inicial</b>: costo de adquisición de activos fijos, costos de instalación, gastos legales y administrativos, entre otros."},
+{id:71,t:"T14",s:"docx",q:"¿Cuál es uno de los principios fundamentales de la financiación ética y sostenible que la diferencia de la financiación tradicional?",o:["La búsqueda exclusiva del máximo retorno financiero a corto plazo","La exigencia de una participación mayoritaria en la empresa a cambio de la inversión","La consideración de factores ambientales, sociales y de gobernanza (ESG)","La financiación exclusiva a través de subvenciones y ayudas públicas"],c:2,e:"La <b>financiación ética y sostenible</b> tiene en cuenta consideraciones <b>ESG (Environmental, Social and Governance)</b>: éticas, sociales, ambientales y de gobernanza en la toma de decisiones de inversión. Busca no solo retorno financiero sino impacto positivo."},
+{id:72,t:"T14",s:"docx",q:"¿Qué instrumento de financiación ajena consiste en que una empresa cede las deudas de sus clientes a una entidad financiera para obtener liquidez de forma anticipada?",o:["Confirming","Leasing","Factoring","Línea de crédito"],c:2,e:"El <b>factoring</b> es cuando una empresa cede las deudas que sus clientes han contraído a una entidad financiera o especializada (factor), obteniendo así liquidez de forma anticipada."},
+{id:73,t:"T14",s:"docx",q:"¿A qué tipo de fuente de financiación pertenecen las aportaciones de los propietarios y los beneficios retenidos?",o:["Financiación mixta","Subvenciones y ayudas públicas","Financiación propia","Financiación ajena"],c:2,e:"Las aportaciones de los propietarios y los beneficios retenidos son ejemplos de <b>financiación propia (capital propio)</b>. Incluye también la reinversión de beneficios. No existe obligación de devolución por parte de la empresa."},
+{id:74,t:"T14",s:"docx",q:"¿Cuál de las siguientes opciones se encuentra dentro de las fuentes de financiación propia?",o:["Factoring","Aportaciones de los socios","Línea de crédito","Préstamo bancario"],c:1,e:"Las <b>aportaciones de los socios</b> son una fuente de financiación propia (capital propio). El factoring, la línea de crédito y el préstamo bancario son fuentes de financiación ajena."},
+{id:75,t:"T14",s:"docx",q:"¿Qué opción es financiación mixta?",o:["Reservas","Capital riesgo","Línea de crédito","Subvención directa"],c:1,e:"El <b>capital riesgo (venture capital)</b> es financiación mixta: se obtiene financiación de inversores privados a cambio de una participación en la empresa. Las reservas son financiación propia; la línea de crédito es ajena; las subvenciones son ayudas públicas."},
+{id:76,t:"T14",s:"docx",q:"¿Qué es factoring?",o:["Alquiler de maquinaria","Estrategia de precios","Venta de acciones","Ceder facturas a entidades financieras"],c:3,e:"El <b>factoring</b> consiste en ceder las facturas (deudas de clientes) a una entidad financiera especializada para obtener liquidez anticipada. La entidad financiera se encarga de cobrar esas deudas."},
+{id:77,t:"T14",s:"docx",q:"¿Cuál de las siguientes opciones es un tipo de inversión que se refiere a la inversión en la creación de nuevos productos, servicios o procesos?",o:["Inversión en activos fijos","Inversión en capital de trabajo","Inversión en marketing y publicidad","Inversión en investigación y desarrollo (I+D)"],c:3,e:"La <b>inversión en investigación y desarrollo (I+D)</b> es la inversión en la creación de nuevos productos, servicios o procesos que pueden mejorar la competitividad de la empresa en el mercado."},
+{id:78,t:"T14",s:"docx",q:"¿Qué mide el ROI principalmente?",o:["Satisfacción de los clientes","Rentabilidad","Rotación de personal","Diseño web"],c:1,e:"El <b>ROI (Retorno de la Inversión)</b> es una medida clave para evaluar la <b>rentabilidad</b> de la inversión. Calcula cuánto tiempo tomará recuperar la inversión inicial y empezar a generar beneficios."},
+{id:79,t:"T14",s:"docx",q:"En relación con el emprendimiento y la viabilidad, ¿qué aspecto hace mención a la dificultad de entrar en el mercado como nuevo competidor?",o:["La competencia","Las barreras de entrada","El riesgo","La capacidad de adaptación"],c:1,e:"Las <b>barreras de entrada</b> son los factores que dificultan la entrada de nuevos competidores en el mercado. Es importante considerar si existen barreras que dificulten la entrada al evaluar la viabilidad del proyecto."},
+{id:80,t:"T14",s:"docx",q:"Si una empresa invierte en la adquisición de un nuevo software de gestión empresarial para mejorar su eficiencia, ¿en qué tipo de inversión se enmarcaría principalmente?",o:["Inversión en tecnología","Inversión en capital de trabajo","Inversión en investigación de mercado","Inversión en expansión"],c:0,e:"La adquisición de software de gestión empresarial se enmarca en la <b>inversión en tecnología</b>: inversión en tecnología y sistemas de información que pueden mejorar la eficiencia y la productividad de la empresa."},
+{id:81,t:"T15",s:"docx",q:"¿Cuál es uno de los elementos principales que componen la estructura económico-financiera de una empresa?",o:["Activos","Rentabilidad","Ciclo económico","Estrategia de marketing"],c:0,e:"Los principales elementos que componen la estructura económico-financiera de una empresa son: <b>activos</b> (recursos que generan beneficios), pasivos (obligaciones financieras), patrimonio neto, estructura de capital, ratios financieros y ciclo económico."},
+{id:82,t:"T15",s:"docx",q:"¿Cuál de los siguientes elementos es un ejemplo de Activo Intangible que forma parte del Activo No Corriente?",o:["Maquinaria y equipo","Inventarios de productos terminados","Efectivo en caja y en cuentas bancarias","Software y licencias"],c:3,e:"El <b>software y licencias</b> son activos intangibles no corrientes. Los activos intangibles no tienen existencia física pero tienen valor para la empresa. Incluyen también patentes, marcas comerciales, derechos de autor y derechos de explotación."},
+{id:83,t:"T15",s:"docx",q:"Como elemento de la estructura económica de una empresa, los edificios, maquinaria y mobiliario se consideran:",o:["Activos corrientes","Activos tangibles","Activos no tangibles","Pasivo fijo"],c:1,e:"Los edificios, maquinaria y mobiliario son <b>activos tangibles</b>: tienen una existencia física y se pueden tocar. Forman parte del activo no corriente de la empresa."},
+{id:84,t:"T15",s:"docx",q:"Según la estructura económico-financiera de una empresa, ¿qué representan los Pasivos?",o:["Las obligaciones financieras de la empresa, es decir, lo que esta debe a terceros, como préstamos bancarios y deudas con proveedores","La inversión total de los propietarios en el negocio","Los recursos que la empresa posee y que le generan beneficios","La diferencia entre los ingresos y los gastos"],c:0,e:"Los <b>pasivos</b> representan las obligaciones financieras de la empresa, es decir, lo que esta debe a terceros. Pueden incluir impuestos pendientes de pago, préstamos bancarios, deudas con proveedores, etc."},
+{id:85,t:"T15",s:"docx",q:"¿Cuál de las siguientes herramientas de la contabilidad financiera es un estado financiero que muestra los ingresos, los gastos y el resultado neto de la empresa durante un periodo específico?",o:["La Cuenta de Resultados","El Balance de Situación","El Plan de Tesorería","El balance de comprobación"],c:0,e:"La <b>Cuenta de Resultados</b> (también llamada estado de resultados o cuenta de pérdidas y ganancias) es el estado financiero que muestra los ingresos, los gastos y el resultado neto de la empresa durante un periodo específico."},
+{id:86,t:"T15",s:"docx",q:"¿Qué representa el patrimonio neto de una empresa?",o:["La diferencia entre los activos y los pasivos","El dinero que la empresa recibe como resultado de sus operaciones comerciales","Los costes en los que incurre la empresa para generar ingresos","El flujo de efectivo a lo largo del tiempo"],c:0,e:"El <b>patrimonio neto</b> (también conocido como capital contable o patrimonio empresarial) es la <b>diferencia entre los activos y los pasivos</b> de la empresa. Representa la inversión de los propietarios en el negocio."},
+{id:87,t:"T15",s:"docx",q:"En la gestión fiscal de España, ¿qué categoría de impuestos grava el consumo de bienes y servicios, siendo el IVA su ejemplo más relevante?",o:["Impuestos directos","Impuestos especiales","Tasas administrativas","Impuestos indirectos"],c:3,e:"Los <b>impuestos indirectos</b> gravan el consumo de bienes y servicios. Los más relevantes en España son: IVA (grava el consumo final), impuestos especiales (tabaco, alcohol, hidrocarburos) e ITP y AJD."},
+{id:88,t:"T15",s:"docx",q:"¿Qué tipo de ingresos representan los que no están directamente relacionados con las operaciones comerciales regulares de la empresa?",o:["Ingresos operativos","Ingresos no operativos","Ingresos financieros","Ingresos frecuentes"],c:1,e:"Los <b>ingresos no operativos</b> son aquellos que no están relacionados con las operaciones comerciales regulares de la empresa, como ingresos por intereses, dividendos u otras fuentes no relacionadas con la actividad principal."},
+{id:89,t:"T15",s:"docx",q:"¿Cuál es un activo circulante (corriente)?",o:["Edificio","Maquinaria","Terreno","Productos terminados"],c:3,e:"Los <b>activos corrientes (circulantes)</b> son aquellos que se espera convertir en efectivo o consumir en un corto plazo (generalmente dentro de un año). Los productos terminados son inventario (activo corriente). Los edificios, maquinaria y terrenos son activos no corrientes."},
+{id:90,t:"T15",s:"docx",q:"¿Qué activos son no corrientes?",o:["Dinero en caja","Deudas de clientes","Materias primas","Edificios"],c:3,e:"Los <b>activos no corrientes</b> (fijos o a largo plazo) son aquellos que se utilizan durante más de un año. Los <b>edificios</b> son activos no corrientes tangibles. El dinero en caja, las deudas de clientes y las materias primas son activos corrientes."},
+{id:91,t:"T15",s:"docx",q:"¿Qué son los fondos propios?",o:["Facturas emitidas","Aportes de los propietarios","Subvenciones y ayudas","Créditos bancarios"],c:1,e:"Los <b>fondos propios</b> son capitales <b>aportados a la empresa por sus propietarios</b>. No existe obligación de devolución por parte de la empresa, dado que nace con voluntad de permanecer en el tiempo."},
+{id:92,t:"T15",s:"docx",q:"Completa: el balance muestra...",o:["Solo gastos","Activos, pasivos y patrimonio neto","Solo ingresos","Costes futuros"],c:1,e:"El <b>balance de situación</b> es un estado financiero que indica, en un momento determinado, la información económica y financiera de la empresa. Diferencia el <b>activo, el pasivo y el patrimonio neto</b>."},
+{id:93,t:"T15",s:"docx",q:"¿Qué impuestos son indirectos?",o:["IRPF","Impuesto de Sociedades","Impuestos especiales","Impuesto sobre sucesiones y donaciones"],c:2,e:"Los <b>impuestos indirectos</b> gravan el consumo: IVA, <b>impuestos especiales</b> (tabaco, alcohol, hidrocarburos, electricidad) e ITP y AJD. El IRPF, el Impuesto de Sociedades y el impuesto sobre sucesiones son impuestos <b>directos</b>."},
+{id:94,t:"T15",s:"docx",q:"¿Qué impuestos son directos?",o:["Impuesto sobre transmisiones patrimoniales","IRPF","IVA","Impuestos especiales"],c:1,e:"Los <b>impuestos directos</b> gravan la renta o el patrimonio. Los más importantes en España son: <b>IRPF</b> (renta de personas físicas), Impuesto de Sociedades, Impuesto sobre el Patrimonio e ISD. El IVA y los impuestos especiales son indirectos."},
+{id:95,t:"T15",s:"docx",q:"¿Qué es pasivo circulante?",o:["Terrenos","Patentes","Capital social","Deudas a corto plazo"],c:3,e:"El <b>pasivo circulante (corriente)</b> son recursos ajenos sujetos a su devolución y cuyo vencimiento tiene lugar en un periodo relativamente corto. Incluye <b>deudas a corto plazo</b>, proveedores, préstamos a corto plazo, etc."},
+{id:96,t:"T15",s:"docx",q:"¿Qué analiza el punto de equilibrio?",o:["Satisfacción laboral","Ventas necesarias para asumir los costes y obtener beneficios","Viabilidad del producto en el mercado","Tamaño del mercado y la competencia del sector"],c:1,e:"El <b>punto de equilibrio</b> determina las <b>ventas necesarias para cubrir los costos y comenzar a obtener beneficios</b>. Ayuda a entender cuándo será rentable el negocio."},
+{id:97,t:"T8",s:"kah",q:"¿Qué tipo de emprendimiento surge cuando una persona comienza un negocio como resultado de la falta de opciones de empleo tradicionales?",o:["Emprendimiento por oportunidad","Emprendimiento escalable","Emprendimiento por necesidad","Emprendimiento tecnológico"],c:2,e:"El <b>emprendimiento por necesidad</b> surge cuando una persona comienza un negocio como resultado de la falta de opciones de empleo tradicionales o de circunstancias que obligan al autoempleo."},
+{id:98,t:"T8",s:"kah",q:"¿Qué tipo de emprendimiento se centra en abordar problemas sociales o ambientales mediante la creación de empresas?",o:["Emprendimiento escalable","Emprendimiento social","Emprendimiento por oportunidad","Emprendimiento tecnológico"],c:1,e:"El <b>emprendimiento social</b> se centra en abordar problemas sociales o ambientales mediante la creación de empresas con fines de lucro o sin fines de lucro."},
+{id:99,t:"T8",s:"kah",q:"¿Qué es la personalidad jurídica de una empresa?",o:["El nombre comercial de la empresa","El reconocimiento legal que le permite actuar como entidad independiente del empresario, con derechos y obligaciones propios","El número de identificación fiscal (NIF) de la empresa","El contrato entre socios fundadores"],c:1,e:"La <b>personalidad jurídica</b> es el reconocimiento legal que se le otorga a una empresa para actuar como una entidad independiente del propio empresario, con derechos y obligaciones propios."},
+{id:100,t:"T8",s:"kah",q:"¿Cuál es el capital social mínimo para constituir una Sociedad Anónima (S.A.) en España?",o:["1€","3.000€","30.000€","60.000€"],c:3,e:"La <b>Sociedad Anónima (S.A.)</b> exige un capital social mínimo de <b>60.000€</b> para su creación. El capital se divide en acciones de libre venta que pueden ser negociadas en bolsa."},
+{id:101,t:"T9",s:"kah",q:"¿Cuántos Objetivos de Desarrollo Sostenible (ODS) tiene la Agenda 2030?",o:["10","17","20","25"],c:1,e:"La <b>Agenda 2030</b> consta de <b>17 Objetivos de Desarrollo Sostenible (ODS)</b>, que comprenden desde la eliminación de la pobreza y el hambre hasta medidas para combatir el cambio climático y la promoción de la paz y la justicia."},
+{id:102,t:"T9",s:"kah",q:"¿En qué año fue respaldada la Agenda 2030 por todos los Estados miembros de las Naciones Unidas?",o:["2010","2012","2015","2020"],c:2,e:"La <b>Agenda 2030</b> fue respaldada por todos los Estados miembros de las Naciones Unidas en el año <b>2015</b>. Su principal objetivo es eliminar la pobreza, fomentar la prosperidad y preservar el medio ambiente."},
+{id:103,t:"T9",s:"kah",q:"¿Quién propuso el modelo de la Economía del Bien Común (EBC)?",o:["Alexander Osterwalder","Eric Ries","Christian Felber","Peter Drucker"],c:2,e:"La <b>Economía del Bien Común (EBC)</b> fue propuesta por el economista austriaco <b>Christian Felber</b>. Busca redefinir el éxito económico basándose en valores éticos y sociales en lugar de simplemente en el crecimiento financiero."},
+{id:104,t:"T10",s:"kah",q:"¿Quién creó el Business Model Canvas?",o:["Eric Ries","Christian Felber","Alexander Osterwalder e Yves Pigneur","Peter Drucker"],c:2,e:"El <b>Business Model Canvas (Modelo Canvas)</b> fue creado por <b>Alexander Osterwalder e Yves Pigneur</b> y se ha convertido en una herramienta ampliamente empleada por emprendedores, startups y empresas para visualizar y desarrollar sus modelos de negocio."},
+{id:105,t:"T10",s:"kah",q:"¿Qué tipo de innovación se da cuando una empresa modifica la forma en la que comercializa y distribuye sus productos?",o:["Innovación de producto","Innovación de proceso","Innovación en marketing","Innovación organizacional"],c:2,e:"La <b>innovación en marketing</b> se trata de modificar la forma en la que se comercializan y distribuyen los productos, así como las estrategias de publicidad y ventas."},
+{id:106,t:"T10",s:"kah",q:"¿Qué tipo de innovación busca que la empresa realice su actividad perjudicando lo menos posible al medioambiente?",o:["Innovación de producto","Innovación organizacional","Innovación de proceso","Innovación ambiental o social"],c:3,e:"La <b>innovación ambiental o social</b> es la que se da cuando las empresas buscan realizar su actividad perjudicando lo menos posible al medioambiente o buscando una mejora del bienestar social."},
+{id:107,t:"T11",s:"kah",q:"¿Cuántos bloques tiene el Modelo Canvas?",o:["5","7","9","12"],c:2,e:"El <b>Modelo Canvas</b> consta de <b>9 bloques</b> principales: propuesta de valor, segmentos de cliente, canales de distribución, relación con el cliente, fuentes de ingresos, recursos clave, actividades clave, alianzas clave y estructura de costos."},
+{id:108,t:"T11",s:"kah",q:"¿Qué bloque del Modelo Canvas responde a la pregunta '¿Cómo se generarán los ingresos con la propuesta de valor?'",o:["Estructura de costos","Alianzas clave","Fuentes de ingresos","Actividades clave"],c:2,e:"Las <b>Fuentes de ingresos</b> del Modelo Canvas responden a la pregunta '¿Cómo se generarán los ingresos con la propuesta de valor?'. Se detallan las diferentes formas en que el negocio generará ingresos."},
+{id:109,t:"T11",s:"kah",q:"¿Qué herramienta sirve para comprender mejor las necesidades, deseos, motivaciones y comportamientos de los clientes objetivo mediante una representación visual?",o:["Modelo Canvas","SCAMPER","Empathy Map (Mapa de empatía)","Benchmarking"],c:2,e:"El <b>Empathy Map (Mapa de empatía)</b> es una herramienta utilizada en el proceso de diseño centrada en el usuario, para comprender mejor las necesidades, deseos, motivaciones y comportamientos de los usuarios o clientes objetivo."},
+{id:110,t:"T12",s:"kah",q:"¿Qué herramienta del plan de empresa analiza las oportunidades y amenazas del macroentorno mediante seis categorías?",o:["DAFO","Benchmarking","PESTEL","Canvas"],c:2,e:"El análisis <b>PESTEL</b> clasifica los factores del macroentorno en seis categorías: Políticos, Económicos, Sociales, Tecnológicos, Ecológicos y Legales."},
+{id:111,t:"T12",s:"kah",q:"¿Qué tipo de segmentación divide el mercado según el estilo de vida, personalidad y valores de los consumidores?",o:["Segmentación demográfica","Segmentación geográfica","Segmentación conductual","Segmentación psicográfica"],c:3,e:"La <b>segmentación psicográfica</b> estudia los perfiles psicológicos en función de la motivación de la compra: estatus social, estilo de vida, personalidad y valores."},
+{id:112,t:"T12",s:"kah",q:"¿Qué tipo de segmentación se basa en el comportamiento del consumidor durante el proceso de compra?",o:["Demográfica","Geográfica","Psicográfica","Conductual"],c:3,e:"La <b>segmentación conductual</b> se basa en el comportamiento del consumidor durante el proceso de compra: el momento y las circunstancias de la compra, los atributos más valorados y la frecuencia de compra."},
+{id:113,t:"T13",s:"kah",q:"¿Cuáles son las 4 Ps del Marketing Mix?",o:["Producto, Precio, Plaza, Persona","Producto, Precio, Distribución (Place), Promoción","Publicidad, Precio, Plaza, Producción","Producto, Posicionamiento, Plaza, Promoción"],c:1,e:"Las <b>4 Ps del Marketing Mix</b> son: <b>Producto (Product), Precio (Price), Distribución (Place) y Promoción (Promotion)</b>. Juntas forman la estrategia de marketing de una empresa."},
+{id:114,t:"T13",s:"kah",q:"¿Qué técnica de marketing consiste en colaborar con personas influyentes en las redes sociales para promocionar productos o servicios?",o:["Marketing de guerrilla","Marketing de contenidos","Marketing de influencia","Marketing de redes sociales"],c:2,e:"El <b>marketing de influencia</b> consiste en colaborar con personas influyentes en las redes sociales (influencers) para promocionar productos o servicios. Los influencers tienen gran audiencia y credibilidad en un nicho específico."},
+{id:115,t:"T13",s:"kah",q:"¿Qué estrategia de marketing digital utiliza técnicas para mejorar la posición de un sitio web en los resultados de búsqueda orgánicos?",o:["SEM","SEO","SMM","PPC"],c:1,e:"Las técnicas de <b>SEO (Search Engine Optimization)</b> se utilizan para mejorar la posición de un sitio web en los resultados de búsqueda orgánicos (no pagados)."},
+{id:116,t:"T14",s:"kah",q:"¿Qué tipo de financiación se obtiene de inversores individuales de alto patrimonio neto que invierten en empresas emergentes a cambio de una participación?",o:["Crowdfunding","Factoring","Business Angels","Líneas ICO"],c:2,e:"Los <b>Business Angels</b> son inversores individuales de alto patrimonio neto que están dispuestos a invertir en empresas emergentes a cambio de una participación en la empresa y/o un papel activo en su gestión."},
+{id:117,t:"T14",s:"kah",q:"¿Qué son las Líneas ICO?",o:["Préstamos entre particulares","Instrumentos financieros del Instituto de Crédito Oficial para facilitar el acceso a la financiación a empresas y emprendedores","Fondos de inversión privados","Subvenciones europeas directas"],c:1,e:"Las <b>Líneas ICO</b> son instrumentos financieros diseñados por el <b>Instituto de Crédito Oficial (ICO)</b> para facilitar el acceso a la financiación a empresas, autónomos y emprendedores en España, con condiciones ventajosas."},
+{id:118,t:"T14",s:"kah",q:"¿Qué es el leasing?",o:["Ceder facturas a entidades financieras","Obtener financiación de la plataforma crowdfunding","Alquilar activos a cambio de pagos periódicos, con opción de compra al final","Obtener préstamo bancario a largo plazo"],c:2,e:"El <b>leasing (arrendamiento financiero)</b> consiste en alquilar activos como maquinaria, equipo o vehículos a cambio de pagos periódicos. Al final del contrato, la empresa puede optar por comprar el activo por un precio predeterminado."},
+{id:119,t:"T15",s:"kah",q:"¿Cuál es la fórmula del ratio de liquidez?",o:["Pasivo corriente / Activo corriente","Activo corriente / Pasivo corriente","Pasivo total / Patrimonio neto","Activo total / Pasivo total"],c:1,e:"El <b>ratio de liquidez</b> se calcula como <b>Activo corriente / Pasivo corriente</b>. El valor óptimo es entre 1,5 y 2. Mide la capacidad de la empresa para hacer frente a sus deudas a corto plazo."},
+{id:120,t:"T15",s:"kah",q:"¿Qué ratio mide el nivel de endeudamiento de una empresa?",o:["Ratio de liquidez","Ratio de tesorería","Ratio de endeudamiento","Ratio de disponibilidad"],c:2,e:"El <b>ratio de endeudamiento</b> se calcula como Pasivo / (Patrimonio Neto + Pasivo). El valor óptimo es entre 0,4 y 0,6. Mide el nivel de deudas de la empresa en relación con sus recursos totales."},
+{id:121,t:"T15",s:"kah",q:"¿Qué documento contable es conocido como 'foto' de la situación económico-financiera de la empresa en un momento determinado?",o:["Cuenta de resultados","Plan de tesorería","Balance de situación","Libro diario"],c:2,e:"El <b>balance de situación</b> puede interpretarse como una 'foto' de la estructura económico-financiera, normalmente a final de año. Muestra el activo, pasivo y patrimonio neto en un momento determinado."},
+{id:122,t:"T15",s:"kah",q:"¿Qué es el IRPF?",o:["Impuesto sobre el Valor Añadido","Impuesto sobre la Renta de las Personas Físicas","Impuesto sobre el Patrimonio","Impuesto de Sociedades"],c:1,e:"El <b>IRPF (Impuesto sobre la Renta de las Personas Físicas)</b> grava la renta obtenida por las personas físicas residentes en España. Es un impuesto directo y progresivo. Los autónomos y las empresas sin personalidad jurídica tributan por este impuesto."},
+];
+
+// ===================== ESTADO =====================
+const ST = {
+  mode:'simulacro', tema:'todos', src:'todas',
+  pool:[], cur:0, answered:false, session:[],
+  fails:[], hist:{done:0,ok:0}, fi:0,
+};
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function setMode(m,el){
+  ST.mode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const showTema=(m==='porTema'||m==='todas');
+  document.getElementById('filters-tema').style.display=showTema?'flex':'none';
+  const labels={
+    simulacro:'Empezar simulacro (40 preguntas) ↗',
+    flashcards:'Empezar flashcards ↗',
+    porTema:'Estudiar tema seleccionado ↗',
+    fallos:ST.fails.length>0?`Repasar ${ST.fails.length} fallos ↗`:'Sin fallos aún',
+    todas:'Responder todas las preguntas ↗'
+  };
+  document.getElementById('start-btn').textContent=labels[m];
+}
+
+function selTema(el,t){document.querySelectorAll('[onclick^="selTema"]').forEach(x=>x.classList.remove('active'));el.classList.add('active');ST.tema=t;}
+function selSrc(el,s){document.querySelectorAll('[onclick^="selSrc"]').forEach(x=>x.classList.remove('active'));el.classList.add('active');ST.src=s;}
+
+function buildPool(){
+  let pool=[...Q];
+  if(ST.tema!=='todos') pool=pool.filter(q=>q.t===ST.tema);
+  if(ST.src!=='todas') pool=pool.filter(q=>q.s===ST.src);
+  return shuffle(pool);
+}
+
+function buildPoolOrdered(){
+  let pool=[...Q];
+  if(ST.tema!=='todos') pool=pool.filter(q=>q.t===ST.tema);
+  if(ST.src!=='todas') pool=pool.filter(q=>q.s===ST.src);
+  return pool;
+}
+
+function startSession(){
+  if(ST.mode==='fallos'&&ST.fails.length===0)return;
+  let pool;
+  if(ST.mode==='simulacro') pool=buildPool().slice(0,40);
+  else if(ST.mode==='flashcards') pool=buildPool();
+  else if(ST.mode==='porTema') pool=buildPool();
+  else if(ST.mode==='todas') pool=buildPoolOrdered();
+  else pool=shuffle(Q.filter(q=>ST.fails.includes(q.id)));
+  ST.pool=pool; ST.cur=0; ST.session=[];
+  if(ST.mode==='flashcards'){ST.fi=0;showScreen('screen-flash');renderFlash();}
+  else{showScreen('screen-quiz');renderQ();}
+}
+
+const srcLabel={'docx':'📝 Examen','kah':'🎮 Kahoot'};
+const srcClass={'docx':'src-docx','kah':'src-kah'};
+
+function renderQ(){
+  const q=ST.pool[ST.cur], n=ST.pool.length;
+  document.getElementById('q-progress').textContent=`${ST.cur+1}/${n}`;
+  document.getElementById('progress-fill').style.width=Math.round(ST.cur/n*100)+'%';
+  document.getElementById('q-meta').innerHTML=`<span class="q-tag tema">${q.t}</span><span class="q-tag ${srcClass[q.s]||'src-docx'}">${srcLabel[q.s]||'📝 Examen'}</span>`;
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-options').innerHTML=q.o.map((o,i)=>`<button class="option" onclick="selectAnswer(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`).join('');
+  document.getElementById('q-explanation').className='explanation';
+  document.getElementById('q-explanation').innerHTML='';
+  document.getElementById('next-btn').className='next-btn';
+  ST.answered=false;
+}
+
+function selectAnswer(idx){
+  if(ST.answered)return; ST.answered=true;
+  const q=ST.pool[ST.cur];
+  const opts=document.querySelectorAll('.option');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const ok=idx===q.c;
+  opts[idx].classList.add(ok?'correct':'wrong');
+  if(!ok)opts[q.c].classList.add('show-correct');
+  const expEl=document.getElementById('q-explanation');
+  expEl.innerHTML=`<strong>${ok?'✓ Correcto':'✗ Incorrecto'}</strong> — ${q.e}`;
+  expEl.className='explanation show'+(ok?'':' wrong-exp');
+  ST.session.push({id:q.id,ok});
+  ST.hist.done++; if(ok){ST.hist.ok++;ST.fails=ST.fails.filter(f=>f!==q.id);}
+  else if(!ST.fails.includes(q.id))ST.fails.push(q.id);
+  updateStats();
+  const nb=document.getElementById('next-btn');
+  nb.className='next-btn show';
+  nb.textContent=ST.cur+1<ST.pool.length?'Siguiente →':'Ver resultados →';
+}
+
+function nextQuestion(){ST.cur++;ST.cur>=ST.pool.length?showResults():renderQ();}
+
+function renderFlash(){
+  const q=ST.pool[ST.fi],n=ST.pool.length;
+  document.getElementById('f-progress').textContent=`${ST.fi+1}/${n}`;
+  document.getElementById('f-fill').style.width=Math.round(ST.fi/n*100)+'%';
+  document.getElementById('f-meta').innerHTML=`<span class="q-tag tema">${q.t}</span><span class="q-tag ${srcClass[q.s]||'src-docx'}">${srcLabel[q.s]||'📝 Examen'}</span>`;
+  document.getElementById('f-question').textContent=q.q;
+  document.getElementById('f-answer').textContent=q.o[q.c];
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('card-controls').style.display='none';
+}
+
+function flipCard(){
+  const fc=document.getElementById('flashcard');
+  fc.classList.toggle('flipped');
+  document.getElementById('card-controls').style.display=fc.classList.contains('flipped')?'flex':'none';
+}
+
+function cardResult(knew){
+  const q=ST.pool[ST.fi];
+  if(!knew&&!ST.fails.includes(q.id))ST.fails.push(q.id);
+  if(knew)ST.fails=ST.fails.filter(f=>f!==q.id);
+  ST.fi++;
+  if(ST.fi>=ST.pool.length)goHome();
+  else renderFlash();
+}
+
+function showResults(){
+  const ok=ST.session.filter(s=>s.ok).length, wr=ST.session.length-ok;
+  const pct=Math.round(ok/ST.session.length*100), pass=pct>=50;
+  document.getElementById('score-pct').textContent=pct+'%';
+  document.getElementById('score-label').textContent=pass?'APROBADO':'REPASA';
+  document.getElementById('score-circle').className='score-circle '+(pass?'pass':'fail');
+  document.getElementById('res-title').textContent=pass?'¡Buen resultado!':'Sigue practicando';
+  document.getElementById('res-sub').textContent=`${ST.session.length} preguntas respondidas`;
+  document.getElementById('res-correct').textContent=ok;
+  document.getElementById('res-wrong').textContent=wr;
+  document.getElementById('res-total').textContent=ST.session.length;
+  let html='';
+  const wrongs=ST.session.filter(s=>!s.ok);
+  if(wrongs.length>0){
+    html='<div class="review-title">Preguntas falladas</div>';
+    wrongs.forEach(s=>{const q=Q.find(x=>x.id===s.id);html+=`<div class="review-item">${q.q}<div class="review-correct">✓ ${q.o[q.c]}</div></div>`;});
+  }
+  document.getElementById('review-list').innerHTML=html;
+  showScreen('screen-results');
+}
+
+function repeatFails(){
+  if(ST.fails.length===0){goHome();return;}
+  ST.pool=shuffle(Q.filter(q=>ST.fails.includes(q.id)));
+  ST.cur=0;ST.session=[];
+  showScreen('screen-quiz');renderQ();
+}
+
+const CHEAT=[
+  {t:"T8",h:"Emprendimiento y Formas Jurídicas",rows:[
+    ["Cultura emprendedora","Conjunto de valores, actitudes, comportamientos y prácticas que promueven el espíritu emprendedor. Incluye aceptación del riesgo y fomento de la creatividad."],
+    ["Intraemprendimiento","Innovar dentro de una organización establecida. Empleados desarrollan nuevas ideas para impulsar el crecimiento de la empresa."],
+    ["Tipos emprendimiento","Por oportunidad, por necesidad, social, escalable, tecnológico."],
+    ["Factores personales","Motivación, apoyo familiar, educación (EET), formación y experiencia."],
+    ["Factores económicos","Acceso a recursos y financiamiento, situación económica del entorno, marco regulatorio."],
+    ["Sin personalidad jurídica","Autónomo (IRPF, ilimitada), Comunidad de Bienes (mín. 2, IRPF, ilimitada), Sociedad Civil (mín. 2, IRPF, ilimitada)."],
+    ["S.L.","Mín. 1 socio. Capital mínimo: 1€. Responsabilidad limitada. Impuesto de Sociedades."],
+    ["S.A.","Mín. 1 socio. Capital mínimo: 60.000€. Responsabilidad limitada. Impuesto de Sociedades."],
+    ["S.Coop. / S. Laboral","Mínimo 3 socios. Responsabilidad limitada. Impuesto de Sociedades."],
+    ["Trámites constitución","1)Certificación negativa nombre, 2)CIF provisional, 3)Desembolso capital, 4)Estatutos y escritura ante notario, 5)Pago ITP, 6)CIF definitivo, 7)Registro Mercantil."],
+    ["Trámites fiscales puesta marcha","Alta en IAE + Alta en censo de empresarios, profesionales y retenedores."],
+    ["Trámites laborales","Inscripción empresa SS, Alta RETA (autónomos), Alta Régimen General (trabajadores), Libro de Visitas."],
+  ]},
+  {t:"T9",h:"Emprendimiento y Sostenibilidad",rows:[
+    ["Innovación social","Desarrollo e implementación de soluciones creativas y sostenibles para desafíos sociales, económicos o ambientales."],
+    ["Justicia social","Equidad e igualdad de oportunidades en la distribución de recursos, beneficios y derechos en la sociedad."],
+    ["Sostenibilidad","Satisfacer necesidades actuales sin comprometer las de generaciones futuras. Minimizar impacto ambiental."],
+    ["Economía del Bien Común (EBC)","Modelo de Christian Felber que mide el éxito económico mediante indicadores de bienestar humano, no solo PIB."],
+    ["Economía circular","Diseñar procesos para minimizar el desperdicio y maximizar la reutilización de recursos."],
+    ["Agenda 2030","Programa ONU (2015) con 17 ODS para eliminar la pobreza, fomentar la prosperidad y preservar el medio ambiente."],
+    ["Transformación digital","Integrar tecnologías digitales en todos los aspectos de la empresa para mejorar operaciones y adaptarse al mercado."],
+    ["Canvas triple capa","Capa 1: Propuesta de valor social. Capa 2: Lógica de impacto. Capa 3: Modelo de negocio."],
+    ["Lean Startup","Metodología de Eric Ries basada en crear un MVP para validar hipótesis antes de grandes inversiones."],
+  ]},
+  {t:"T10",h:"Emprendimiento e Innovación",rows:[
+    ["Innovación","Proceso de introducir novedades que generan valor. Puede ser incremental (pequeñas mejoras) o disruptiva (cambios radicales)."],
+    ["Manual de Oslo","Guía de la OCDE que clasifica la innovación en: productos y procesos empresariales."],
+    ["Tipos de innovación","De productos, de proceso empresarial, organizacional, en marketing, ambiental o social, de modelo de negocio."],
+    ["I+D+I","Investigar + Desarrollar + Innovar. Beneficios: impulsa creatividad, contribuye al crecimiento económico."],
+    ["Agente de innovación","Persona/equipo/entidad que actúa como líder, facilitador y defensor del proceso de innovación."],
+    ["Liderazgo administrativo","Reglas claras, jerarquía, control. Asociado a mejora incremental."],
+    ["Liderazgo participativo","Fomenta colaboración activa en la toma de decisiones. Empodera al equipo."],
+    ["Liderazgo transaccional","Recompensas y castigos para motivar. Puede limitar la creatividad."],
+    ["Liderazgo interactivo","Colaboración e intercambio de ideas. Comunicación abierta."],
+    ["Liderazgo carismático/transformacional","Inspira y motiva a través del carisma y visión de futuro."],
+  ]},
+  {t:"T11",h:"La Idea Emprendedora",rows:[
+    ["Idea de negocio","Concepción inicial que responde a una necesidad del mercado o problema a resolver. Base del plan de negocio."],
+    ["SCAMPER","Sustituir, Combinar, Adaptar, Modificar, Proponer otros usos, Eliminar, Reorganizar."],
+    ["Design Thinking","Empatizar → Definir → Idear → Prototipar → Testear. Enfoque centrado en el usuario."],
+    ["Benchmarking","Analizar y comparar mejores prácticas de empresas líderes para identificar oportunidades de mejora."],
+    ["Brainstorming","Lluvia de ideas. Reglas: no juzgar, no censurar, construir sobre ideas de otros, cantidad sobre calidad."],
+    ["Modelo Canvas","9 bloques: Propuesta de valor, Segmentos de cliente, Canales, Relación con cliente, Fuentes de ingresos, Recursos clave, Actividades clave, Alianzas clave, Estructura de costos."],
+    ["Empathy Map","Herramienta para comprender necesidades del usuario. 6 partes: qué ve, dice/hace, piensa/siente, escucha, retos/oportunidades, qué podemos hacer."],
+    ["Elevator Pitch","Presentación breve y persuasiva de una idea de negocio en el tiempo de un viaje en ascensor."],
+  ]},
+  {t:"T12",h:"El Plan de Empresa",rows:[
+    ["Plan de empresa","Documento que recoge la estrategia de un emprendedor. También llamado estudio de viabilidad del proyecto."],
+    ["Uso interno","Poner las cosas claras, analizar viabilidad, guía y hoja de ruta diaria."],
+    ["Uso externo","Tarjeta de presentación para inversores, bancos e instituciones."],
+    ["Estructura mínima","Presentación, misión/visión/valores, análisis entorno, plan producción, marketing, RRHH, aspectos jurídicos, plan financiero."],
+    ["PESTEL","Político, Económico, Social, Tecnológico, Ecológico, Legal. Analiza el macroentorno."],
+    ["Microentorno","Competidores, clientes, proveedores. La empresa SÍ puede influir en él."],
+    ["Segmentación","Dividir el mercado en grupos homogéneos: demográfica, geográfica, psicográfica, conductual."],
+    ["PMV","Producto Mínimo Viable: versión básica del producto para obtener retroalimentación real y validar la idea."],
+    ["Fases desarrollo producto","1)Generación ideas, 2)Selección y validación, 3)Diseño y desarrollo, 4)Pruebas, 5)Producción, 6)Lanzamiento, 7)Seguimiento."],
+  ]},
+  {t:"T13",h:"Estrategias de Marketing",rows:[
+    ["Marketing","Conjunto de actividades para identificar, anticipar y satisfacer necesidades de clientes de manera rentable."],
+    ["Plan de marketing","Guía que orienta las actividades de comercialización. Define estrategias, presupuesto y calendario."],
+    ["4 Ps Marketing Mix","Producto, Precio, Distribución (Place), Promoción."],
+    ["Publicidad","Mensaje promocional a través de medios pagados para aumentar visibilidad y persuadir."],
+    ["Promoción de ventas","Actividades para incentivar la compra en un periodo específico: descuentos, cupones, sorteos."],
+    ["Marketing de influencia","Colaborar con influencers para promocionar productos o servicios."],
+    ["Marketing de guerrilla","Estrategias creativas y de bajo presupuesto que sorprenden al público de manera inesperada."],
+    ["Marketing digital","Estrategias a través de internet: SEO, publicidad online, redes sociales, email marketing, contenidos."],
+    ["Marketing de contenidos","Crear y distribuir contenido relevante para atraer y retener audiencia claramente definida."],
+    ["Marketing 3.0","Trata a los clientes como seres humanos completos con mente, corazón y espíritu."],
+  ]},
+  {t:"T14",h:"Viabilidad, Inversión y Financiación",rows:[
+    ["Punto de equilibrio","Cantidad de ventas en la que los costes fijos totales son compensados. A partir de ese nivel hay beneficios."],
+    ["ROI","Retorno de la Inversión. Mide cuánto tiempo se tarda en recuperar la inversión inicial."],
+    ["Financiación propia","Aportaciones de propietarios, reservas acumuladas (beneficios retenidos), reinversión de beneficios."],
+    ["Financiación ajena","Préstamos bancarios, líneas de crédito, leasing (con opción de compra), renting (sin opción de compra), factoring, confirming, emisión de deuda."],
+    ["Financiación mixta","Capital riesgo (venture capital), Business Angels, Crowdfunding."],
+    ["Subvenciones/ayudas públicas","Líneas ICO (Instituto de Crédito Oficial), subvenciones, préstamos a bajo interés."],
+    ["Factoring","Empresa cede deudas de sus clientes a una entidad financiera para obtener liquidez anticipada."],
+    ["Confirming","Entidades financieras gestionan los pagos que las empresas hacen a sus proveedores."],
+    ["Leasing","Alquiler de activos con opción de compra al final del contrato."],
+    ["Financiación ética/sostenible (ESG)","Considera factores ambientales, sociales y de gobernanza. Busca impacto positivo además de retorno financiero."],
+  ]},
+  {t:"T15",h:"Estructura Económico-Financiera",rows:[
+    ["Activo corriente","Bienes que se convierten en efectivo en menos de 1 año: efectivo, cuentas por cobrar, inventarios, gastos anticipados."],
+    ["Activo no corriente","Bienes con vida útil >1 año: terrenos, edificios, maquinaria, patentes, software. Tangibles e intangibles."],
+    ["Pasivo corriente","Deudas a corto plazo: proveedores, préstamos a corto plazo."],
+    ["Pasivo fijo","Deudas a largo plazo: préstamos a largo plazo."],
+    ["Patrimonio neto","Activos - Pasivos. Representa la inversión de los propietarios."],
+    ["Balance de situación","'Foto' de la estructura económico-financiera en un momento determinado. Activo = Pasivo + PN."],
+    ["Cuenta de resultados","Muestra ingresos, gastos y resultado neto durante un periodo. Beneficio neto = Ingresos - Gastos."],
+    ["Ratios financieros","Liquidez (1,5-2), Tesorería (0,8-1,2), Disponibilidad (0,2-0,3), Endeudamiento (0,4-0,6)."],
+    ["Impuestos directos","Gravan renta/patrimonio: IRPF, Impuesto de Sociedades, IP, ISD."],
+    ["Impuestos indirectos","Gravan consumo: IVA, Impuestos especiales (tabaco, alcohol, hidrocarburos), ITP y AJD."],
+  ]},
+];
+
+function showCheatsheet(){
+  document.getElementById('cheat-content').innerHTML=CHEAT.map(t=>`
+    <div class="cs-section">
+      <div class="cs-head" onclick="toggleCs(this)">${t.t} — ${t.h} <span>▾</span></div>
+      <div class="cs-body">${t.rows.map(r=>`<div class="cs-row"><span class="cs-key">${r[0]}</span><span class="cs-val">${r[1]}</span></div>`).join('')}</div>
+    </div>`).join('');
+  showScreen('screen-cheat');
+}
+
+function toggleCs(el){const b=el.nextElementSibling;b.classList.toggle('open');el.querySelector('span').textContent=b.classList.contains('open')?'▴':'▾';}
+
+function goHome(){updateStats();showScreen('screen-home');}
+
+function showScreen(id){
+  ['screen-home','screen-quiz','screen-results','screen-flash','screen-cheat'].forEach(s=>{document.getElementById(s).classList.toggle('hidden',s!==id);});
+}
+
+function updateStats(){
+  document.getElementById('stat-done').textContent=ST.hist.done;
+  document.getElementById('stat-correct').textContent=ST.hist.ok;
+  document.getElementById('stat-pct').textContent=ST.hist.done>0?Math.round(ST.hist.ok/ST.hist.done*100)+'%':'—';
+  if(ST.mode==='fallos')document.getElementById('start-btn').textContent=ST.fails.length>0?`Repasar ${ST.fails.length} fallos ↗`:'Sin fallos aún';
+}
+</script>
